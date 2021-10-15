@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from .services.returnStatusCode import *
 
 from django.http import HttpRequest, JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -21,17 +22,21 @@ class signUp(APIView):
             password = request.data['password']
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
-        userModel = User.objects.create_user(
-            password=password,
-            id=id,
-            username=username
-        )
-        userModel.save()
         try:
-            token = Token.objects.create(user=userModel)
-        except IntegrityError:
-            token = Token.objects.get(user=userModel)
-        return JsonResponse(OK_200(data={"token": token.key}), status=200)
+            User.objects.get(id=id)
+        except ObjectDoesNotExist:
+            userModel = User.objects.create_user(
+                password=password,
+                id=id,
+                username=username
+            )
+            userModel.save()
+            try:
+                token = Token.objects.create(user=userModel)
+            except IntegrityError:
+                token = Token.objects.get(user=userModel)
+            return JsonResponse(OK_200(data={"token": token.key}), status=200)
+        return JsonResponse(BAD_REQUEST_400(data={}, message='User Already Exists'))
 
 
 @method_decorator(csrf_exempt, name='dispatch')
