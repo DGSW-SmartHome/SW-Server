@@ -25,11 +25,14 @@ class signUp(APIView):
         try:
             User.objects.get(id=id)
         except ObjectDoesNotExist:
-            userModel = User.objects.create_user(
-                password=password,
-                id=id,
-                username=username
-            )
+            try:
+                userModel = User.objects.create_user(
+                    password=password,
+                    id=id,
+                    username=username
+                )
+            except (KeyError, ValueError):
+                return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
             userModel.save()
             try:
                 token = Token.objects.create(user=userModel)
@@ -72,6 +75,8 @@ class checkUserExists(APIView):
             User.objects.get(id=id)
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(message='No Exiting user', status=200, data={}), status=200)
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         return JsonResponse(CUSTOM_CODE(message='There is Exiting user', status=400, data={}), status=400)
 
 
