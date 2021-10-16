@@ -31,15 +31,15 @@ class signUp(APIView):
                     id=id,
                     username=username
                 )
+                userModel.save()
             except (KeyError, ValueError):
                 return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
-            userModel.save()
             try:
                 token = Token.objects.create(user=userModel)
             except IntegrityError:
                 token = Token.objects.get(user=userModel)
             return JsonResponse(OK_200(data={"token": token.key}), status=200)
-        return JsonResponse(BAD_REQUEST_400(data={}, message='User Already Exists'))
+        return JsonResponse(BAD_REQUEST_400(data={}, message='User Already Exists'), status=400)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
