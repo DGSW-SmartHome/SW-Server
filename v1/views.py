@@ -61,7 +61,18 @@ class checkTokenValidation(APIView):
         userModel = request.user
         return JsonResponse(CUSTOM_CODE(status=200, data={}, message='Valid Token'), status=200)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
+class checkUserExists(APIView):
+    def post(self, request):
+        try:
+            id = request.data['id']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            User.objects.get(id=id)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(message='No Exiting user', status=200, data={}), status=200)
+        return JsonResponse(CUSTOM_CODE(message='There is Exiting user', status=400, data={}), status=400)
 
 
 # id username password
