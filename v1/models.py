@@ -65,3 +65,12 @@ class User(AbstractUser):
         verbose_name = 'user'
         verbose_name_plural = 'users'
 
+
+class fineDustInfo(models.Model):
+    user = models.OneToOneField(User, verbose_name='User', on_delete=models.CASCADE, null=False, primary_key=True)
+    firstCityName = models.CharField(max_length=50, null=True)
+    lastCityName = models.CharField(max_length=50, null=True)
+    fullCityName = models.CharField(max_length=100, null=True)
+    fineDustValue = models.CharField(null=True, max_length=10, verbose_name='good-bad-worst')
+    fineDust = models.IntegerField(null=True)
+

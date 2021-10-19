@@ -80,4 +80,55 @@ class checkUserExists(APIView):
         return JsonResponse(CUSTOM_CODE(message='There is Exiting user', status=400, data={}), status=400)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class fineDustInformation(APIView):
+    def post(self, request):
+        try:
+            firstCityName = request.data['firstCityName']
+            lastCityName = request.data['lastCityName']
+            fineDustValue = request.data['fineDustValue']
+            fineDust = request.data['fineDust']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            fineDustDB = fineDustInfo(
+                user=request.user,
+                firstCityName=firstCityName,
+                lastCityName=lastCityName,
+                fullCityName=firstCityName+' '+lastCityName,
+                fineDustValue=fineDustValue,
+                fineDust=fineDust
+            )
+            fineDustDB.save()
+            return JsonResponse(OK_200(data={}), status=200)
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        except Exception as E:
+            print(E)
+        finally:
+            return JsonResponse(CUSTOM_CODE(message='Unknown Internal Server Error Accorded!', status=500, data={}), status=500)
+
+    def get(self, request):
+        try:
+            fineDustDB = fineDustInfo.objects.get(user=request.user)
+            if not fineDustDB.fullCityName:
+                return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        try:
+            return JsonResponse(OK_200(data={
+                "firstCityName": fineDustDB.firstCityName,
+                "lastCityName": fineDustDB.lastCityName,
+                "fullCityName": fineDustDB.fullCityName,
+                "fineDustValue": fineDustDB.fineDustValue,
+                "fineDust": fineDustDB.fineDust
+            }), status=200)
+        except Exception as E:
+            print(E)
+            return JsonResponse(CUSTOM_CODE(message='Unknown Internal Server Error Accorded!', status=500, data={}), status=500)
+
+
+
+
+
 # id username password

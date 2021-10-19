@@ -7,4 +7,5 @@ urlpatterns = [
     path('user/manage/signin/', views.signIn.as_view(), name='index'),
     path('user/manage/tokencheck/', views.checkTokenValidation.as_view(), name='index'),
     path('user/manage/signup/checkusername/', views.checkUserExists.as_view(), name='index'),
+    path('user/data/finedust/', views.fineDustInformation.as_view(), name='index')
 ]
