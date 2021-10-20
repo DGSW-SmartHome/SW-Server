@@ -6,7 +6,7 @@ class MQTT:
   def __init__(self):
     self.broker = ''  # mqtt broker ip
     self.port = 1883
-    self.topic = 'smarthome/sensor'
+    self.topic = 'smarthome/sensor' # 하드웨어 쪽과 상의 후 변경
     self.client = None
     
     # sensor Value

@@ -132,3 +132,15 @@ class fineDustInformation(APIView):
 
 
 # id username password
+
+
+# MQTT 통신 Get Method 예시
+# @method_decorator(csrf_exempt, name='dispatch')
+# class temp(View):
+#     def get(self, request):
+#         value = recv()
+#         returnValue = {
+#             "status": -1,
+#             "value": value['temp']
+#         }
+#         return JsonResponse(returnValue)
