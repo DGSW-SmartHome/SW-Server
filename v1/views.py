@@ -105,8 +105,8 @@ class fineDustInformation(APIView):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         except Exception as E:
             print(E)
-        finally:
-            return JsonResponse(CUSTOM_CODE(message='Unknown Internal Server Error Accorded!', status=500, data={}), status=500)
+        return JsonResponse(CUSTOM_CODE(message='Unknown Internal Server Error Accorded!', status=500, data={}), status=500)
+
 
     def get(self, request):
         try:
