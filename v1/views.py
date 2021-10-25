@@ -20,8 +20,8 @@ class signUp(APIView):
             id = request.data['id']
             username = request.data['username']
             password = request.data['password']
-        except (KeyError, ValueError):
-            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        except (KeyError, ValueError) as E:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing: ' + str(E), data={}), status=400)
         try:
             User.objects.get(id=id)
         except ObjectDoesNotExist:
@@ -47,8 +47,8 @@ class signIn(APIView):
     def post(self, request):
         try:
             user = authenticate(id=request.data['id'], password=request.data['password'])
-        except (KeyError, ValueError):
-            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        except (KeyError, ValueError) as E:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing: ' + str(E), data={}), status=400)
         if user is not None:
             try:
                 token = Token.objects.create(user=user)
@@ -69,8 +69,8 @@ class checkUserExists(APIView):
     def post(self, request):
         try:
             id = request.data['id']
-        except (KeyError, ValueError):
-            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        except (KeyError, ValueError) as E:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing' + str(E), data={}), status=400)
         try:
             User.objects.get(id=id)
         except ObjectDoesNotExist:
@@ -88,8 +88,9 @@ class fineDustInformation(APIView):
             lastCityName = request.data['lastCityName']
             fineDustValue = request.data['fineDustValue']
             fineDust = request.data['fineDust']
-        except (KeyError, ValueError):
-            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        except (KeyError, ValueError) as E:
+            print(E)
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing: ' + str(E), data={}), status=400)
         try:
             fineDustDB = fineDustInfo(
                 user=request.user,
