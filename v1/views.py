@@ -89,7 +89,6 @@ class fineDustInformation(APIView):
             fineDustValue = request.data['fineDustValue']
             fineDust = request.data['fineDust']
         except (KeyError, ValueError) as E:
-            print(E)
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing: ' + str(E), data={}), status=400)
         try:
             fineDustDB = fineDustInfo(
