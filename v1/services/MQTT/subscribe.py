@@ -6,7 +6,7 @@ class MQTT:
   def __init__(self):
     self.broker = ''  # mqtt broker ip
     self.port = 1883
-    self.topic = 'smarthome/sensor' # 하드웨어 쪽과 상의 후 변경
+    self.topic = '/SMARTHOME/sensor' # 하드웨어 쪽과 상의 후 변경
     self.client = None
     
     # sensor Value
@@ -37,7 +37,7 @@ class MQTT:
         print('this is got : {}', format(j))  # 가져온 값 출력
         """
       else:
-        ptint('no data...')
+        print('no data...')
     
     client.subscribe(self.topic)
     client.on_message = on_message

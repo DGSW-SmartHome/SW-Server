@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 
 broker = ''  # mqtt broker ip
+topic = '/SMARTHOME/contorl'
 
 class mqtt_publish():
   def __init__(self):
@@ -16,11 +17,11 @@ class mqtt_publish():
         'type': 'led',
         'cmd': 'on'
       }
-      self.mqtt.publish('smarthome/control', json.dumps(response).encode())  # topic & message 발행
+      self.mqtt.publish(topic, json.dumps(response).encode())  # topic & message 발행
     elif status == 'false':
       response = {
         'type': 'led',
         'cmd': 'off'
       }
-      self.mqtt.publish('smarthome/control', json.dumps(response).encode())  # topic & message 발행
+      self.mqtt.publish(topic, json.dumps(response).encode())  # topic & message 발행
   """
