@@ -4,7 +4,7 @@ import json
 
 class MQTT:
   def __init__(self):
-    self.broker = ''  # mqtt broker ip
+    self.broker = '13.209.41.37'  # mqtt broker ip
     self.port = 1883
     self.topic = '/SMARTHOME/sensor' # 하드웨어 쪽과 상의 후 변경
     self.client = None
