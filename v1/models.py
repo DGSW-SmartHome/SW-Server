@@ -76,8 +76,17 @@ class fineDustInfo(models.Model):
 
 
 class userRoomLight(models.Model):
-    roomID = models.IntegerField(null=False)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    roomID = models.IntegerField(null=False, primary_key=True)
     roomName = models.CharField(max_length=15, default='room', null=True, unique=False)
+    status = models.BooleanField(default=False, null=False)
+
+
+class userRoomPlug(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    roomID = models.IntegerField(null=False, primary_key=True)
+    roomName = models.CharField(max_length=15, default='room', null=True, unique=False)
+    status = models.BooleanField(default=False, null=False)
 
 
 class weatherInfo(models.Model):

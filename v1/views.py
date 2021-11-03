@@ -32,6 +32,11 @@ class signUp(APIView):
                     username=username
                 )
                 userModel.save()
+                for i in range(1, 7):
+                    light = userRoomLight(user=userModel, roomID=i)
+                    plug = userRoomPlug(user=userModel, roomID=i)
+                    light.save()
+                    plug.save()
             except (KeyError, ValueError):
                 return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
             try:
@@ -166,6 +171,31 @@ class weatherInformation(APIView):
             "temperature": weatherObject.temperature
         }),
         status=200)
+
+
+class roomLightAPI(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        returnValue = {
+            "data": []
+        }
+        try:
+            roomLightObject = userRoomLight.objects.filter(user=request.user)
+            roomLightObject = list(roomLightObject)
+        except ObjectDoesNotExist:
+            roomLightObject = []
+            for i in range(1, 7):
+                light = userRoomLight(user=request.user, roomID=i)
+                light.save()
+                roomLightObject.append(light)
+        for _roomLightObject in roomLightObject:
+            roomDict = {"id": _roomLightObject.roomID, "name": _roomLightObject.roomName, "status": _roomLightObject.status}
+            returnValue["data"].append(roomDict)
+        return JsonResponse(OK_200(data=returnValue), status=200)
+
+    def post(self, request):
+        pass
 
 
 
