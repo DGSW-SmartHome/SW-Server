@@ -24,7 +24,10 @@ class MQTT:
     
     client = mqtt.Client()
     client.on_connect = on_connect
-    client.connect(self.broker, self.port)
+    try:
+      client.connect(self.broker, self.port)
+    except ValueError:
+      print("!!Cannot Connect to HOST!!")
     return client
   
   def subscribe(self, client: mqtt):
