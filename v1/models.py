@@ -82,6 +82,6 @@ class userRoomLight(models.Model):
 
 class weatherInfo(models.Model):
     user = models.OneToOneField(User, verbose_name='user', on_delete=models.CASCADE, null=False, primary_key=True)
-    cityName = models.TextField(related_name='city', default='')
+    cityName = models.TextField(default='')
     weather = models.TextField()
-    temperature = models.IntegerField(related_name='temp', default=0, null=True)
+    temperature = models.IntegerField(default=0, null=True)
