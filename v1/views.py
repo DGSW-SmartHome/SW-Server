@@ -151,6 +151,22 @@ class weatherInformation(APIView):
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
 
+    def get(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            weatherObject = weatherInfo.objects.get(user=request.user)
+            if not weatherObject.cityName:
+                return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        return JsonResponse(OK_200(data={
+            "city": weatherObject.cityName,
+            "weather": weatherObject.weather,
+            "temperature": weatherObject.temperature
+        }),
+        status=200)
+
 
 
 # id username password
