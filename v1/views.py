@@ -20,8 +20,8 @@ class signUp(APIView):
             id = request.data['id']
             username = request.data['username']
             password = request.data['password']
-        except (KeyError, ValueError) as E:
-            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing: ' + str(E), data={}), status=400)
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
             User.objects.get(id=id)
         except ObjectDoesNotExist:
@@ -195,7 +195,19 @@ class roomLightAPI(APIView):
         return JsonResponse(OK_200(data=returnValue), status=200)
 
     def post(self, request):
-        pass
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            id = request.data['id']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        roomLightObject.status = not roomLightObject.status
+        roomLightObject.save()
+        return JsonResponse(OK_200(), status=200)
 
 
 
