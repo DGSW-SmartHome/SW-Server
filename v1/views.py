@@ -210,6 +210,30 @@ class roomLightAPI(APIView):
         return JsonResponse(OK_200(), status=200)
 
 
+class roomPlugAPI(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        returnValue = {
+            "data": []
+        }
+        try:
+            roomPlugAPI = userRoomPlug.objects.filter(user=request.user)
+            roomPlugObject = list(roomPlugAPI)
+        except ObjectDoesNotExist:
+            roomPlugObject = []
+            for i in range(1, 7):
+                plug = userRoomPlug(user=request.user, roomID=i)
+                plug.save()
+                roomPlugObject.append(plug)
+        for _roomPlugObject in roomPlugObject:
+            roomDict = {"id": _roomPlugObject.roomID, "name": _roomPlugObject.roomName, "status": _roomPlugObject.status}
+            returnValue["data"].append(roomDict)
+        return JsonResponse(OK_200(data=returnValue), status=200)
+
+    
+
+
 
 # id username password
 
