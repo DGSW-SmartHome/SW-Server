@@ -231,7 +231,20 @@ class roomPlugAPI(APIView):
             returnValue["data"].append(roomDict)
         return JsonResponse(OK_200(data=returnValue), status=200)
 
-    
+    def post(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            id = request.data['id']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            roomPlugObject = userRoomPlug.objects.get(user=request.user, roomID=id)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        roomPlugObject.status = not roomPlugObject.status
+        roomPlugObject.save()
+        return JsonResponse(OK_200(), status=200)
 
 
 
