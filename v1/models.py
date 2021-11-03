@@ -74,3 +74,14 @@ class fineDustInfo(models.Model):
     fineDust = models.CharField(null=True, max_length=10, verbose_name='good-bad-worst')
     fineDustValue = models.IntegerField(null=True)
 
+
+class userRoomLight(models.Model):
+    roomID = models.IntegerField(null=False)
+    roomName = models.CharField(max_length=15, default='room', null=True, unique=False)
+
+
+class weatherInfo(models.Model):
+    user = models.OneToOneField(User, verbose_name='user', on_delete=models.CASCADE, null=False, primary_key=True)
+    cityName = models.TextField(related_name='city', default='')
+    weather = models.TextField()
+    temperature = models.IntegerField(related_name='temp', default=0, null=True)

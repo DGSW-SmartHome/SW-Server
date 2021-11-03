@@ -61,6 +61,8 @@ class signIn(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class checkTokenValidation(APIView):
     def get(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         userModel = request.user
         return JsonResponse(CUSTOM_CODE(status=200, data={}, message='Valid Token'), status=200)
 
@@ -128,6 +130,26 @@ class fineDustInformation(APIView):
             return JsonResponse(CUSTOM_CODE(message='Unknown Internal Server Error Accorded!', status=500, data={}), status=500)
 
 
+class weatherInformation(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            city = request.data['city']
+            weather = request.data['weather']
+            temperature = request.data['temperature']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            weatherObject = weatherInfo(
+                user=request.user,
+                cityName=city,
+                weather=weather,
+                temperature=temperature
+            )
+            weatherObject.save()
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
 
 
 
