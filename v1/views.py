@@ -2,6 +2,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from .services.returnStatusCode import *
 
+from .services.MQTT.publish import *
+from .services.MQTT.subscribe import *
+
 from django.http import HttpRequest, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
@@ -153,6 +156,7 @@ class weatherInformation(APIView):
                 temperature=temperature
             )
             weatherObject.save()
+            return JsonResponse(OK_200(data={}), status=200)
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
 
@@ -206,6 +210,12 @@ class roomLightAPI(APIView):
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
         roomLightObject.status = not roomLightObject.status
+        if roomLightObject.status:
+            returnStatus = 3
+        else:
+            returnStatus = 0
+        mqtt = mqtt_publish()
+        mqtt.roomLight(returnStatus, roomLightObject.roomID)
         roomLightObject.save()
         return JsonResponse(OK_200(), status=200)
 
@@ -243,6 +253,8 @@ class roomPlugAPI(APIView):
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
         roomPlugObject.status = not roomPlugObject.status
+        mqtt = mqtt_publish()
+        mqtt.roomPlug(roomPlugObject.status, roomPlugObject.roomID)
         roomPlugObject.save()
         return JsonResponse(OK_200(), status=200)
 

@@ -9,5 +9,6 @@ urlpatterns = [
     path('user/manage/signup/checkusername/', views.checkUserExists.as_view(), name='index'),
     path('user/data/finedust/', views.fineDustInformation.as_view(), name='index'),
     path('user/data/weather/', views.weatherInformation.as_view(), name='index'),
-    path('user/data/room/light/', views.roomLightAPI.as_view(), name='index')
+    path('user/data/room/light/', views.roomLightAPI.as_view(), name='index'),
+    path('user/data/room/plug/', views.roomPlugAPI.as_view(), name='index')
 ]
