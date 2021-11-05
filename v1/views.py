@@ -138,6 +138,7 @@ class fineDustInformation(APIView):
             return JsonResponse(CUSTOM_CODE(message='Unknown Internal Server Error Accorded!', status=500, data={}), status=500)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class weatherInformation(APIView):
     def post(self, request):
         if not request.user.is_authenticated or request.user.is_anonymous:
@@ -177,6 +178,7 @@ class weatherInformation(APIView):
         status=200)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class roomLightAPI(APIView):
     def get(self, request):
         if not request.user.is_authenticated or request.user.is_anonymous:
@@ -220,6 +222,13 @@ class roomLightAPI(APIView):
         return JsonResponse(OK_200(), status=200)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class roomLightNameAPI(APIView):
+    def post(self, request):
+        pass
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class roomPlugAPI(APIView):
     def get(self, request):
         if not request.user.is_authenticated or request.user.is_anonymous:
@@ -257,6 +266,28 @@ class roomPlugAPI(APIView):
         mqtt.roomPlug(roomPlugObject.status, roomPlugObject.roomID)
         roomPlugObject.save()
         return JsonResponse(OK_200(), status=200)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class roomPlugNameAPI(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            id = request.data['id']
+            name = request.data['name']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            roomPlugObject = userRoomPlug.objects.get(user=request.user, roomID=id)
+        except ObjectDoesNotExist:
+            for i in range(1, 7):
+                plug = userRoomPlug(user=request.user, roomID=i)
+                plug.save()
+            roomPlugObject = userRoomPlug.objects.get(user=request.user, roomID=id)
+        roomPlugObject.roomID = name
+        roomPlugObject.save()
+        return JsonResponse(OK_200(data={}), status=200)
 
 
 
