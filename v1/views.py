@@ -239,7 +239,7 @@ class roomLightNameAPI(APIView):
                 light = userRoomLight(user=request.user, roomID=i)
                 light.save()
             roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
-        roomLightObject.roomID = name
+        roomLightObject.roomName = name
         roomLightObject.save()
         return JsonResponse(OK_200(data={}), status=200)
 
