@@ -225,7 +225,23 @@ class roomLightAPI(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class roomLightNameAPI(APIView):
     def post(self, request):
-        pass
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            id = request.data['id']
+            name = request.data['name']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
+        try:
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
+        except ObjectDoesNotExist:
+            for i in range(1, 7):
+                light = userRoomLight(user=request.user, roomID=i)
+                light.save()
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
+        roomLightObject.roomID = name
+        roomLightObject.save()
+        return JsonResponse(OK_200(data={}), status=200)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
