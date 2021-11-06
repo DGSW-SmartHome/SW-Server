@@ -301,7 +301,7 @@ class roomPlugNameAPI(APIView):
                 plug = userRoomPlug(user=request.user, roomID=i)
                 plug.save()
             roomPlugObject = userRoomPlug.objects.get(user=request.user, roomID=id)
-        roomPlugObject.roomID = name
+        roomPlugObject.roomName = name
         roomPlugObject.save()
         return JsonResponse(OK_200(data={}), status=200)
 
