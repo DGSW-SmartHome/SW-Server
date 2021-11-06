@@ -154,7 +154,7 @@ class weatherInformation(APIView):
                 user=request.user,
                 cityName=city,
                 weather=weather,
-                temperature=temperature
+                temperature=int(temperature)
             )
             weatherObject.save()
             return JsonResponse(OK_200(data={}), status=200)

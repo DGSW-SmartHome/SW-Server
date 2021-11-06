@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 
-broker = ''  # mqtt broker ip
+broker = '13.209.41.37'  # mqtt broker ip
 topic = '/SMARTHOME/contorl'
 
 

@@ -54,6 +54,7 @@ class MQTT:
     self.get_data()
   
   def get_data(self):
+    pass
     """
     if self.fineDust == None:  # 함수에서 만들어둔 변수가 전부 None 이라면
       returnValue = {
