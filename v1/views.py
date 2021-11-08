@@ -14,7 +14,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .models import *
-from .services.functions import getLightStatus
+from .services.functions import getLightStatus, getLightRoom
 from .__init__ import recv
 
 
@@ -207,48 +207,54 @@ class roomLightAPI(APIView):
             print("SERVER IS OFFLINE")
             HW_STATUS_FLAG = False
         temp = 1
+        lightIDFlag = 1
         for _roomLightObject in roomLightObject:
             if HW_STATUS_FLAG:
                 lightStatusStamp = getLightStatus(HW_DATA["light" + str(temp)])
                 temp += 1
                 _roomLightObject.light1 = lightStatusStamp["light1"]
                 _roomLightObject.light2 = lightStatusStamp["light2"]
-            roomDict = {
-                "id": _roomLightObject.roomID,
-                "lightName1": _roomLightObject.lightName1,
-                "statusLight1": _roomLightObject.light1,
-                "lightName2": _roomLightObject.lightName2,
-                "statusLight2": _roomLightObject.light2
-            }
+            for i in range(1, 3):
+                roomDict = {
+                    "id": lightIDFlag,
+                    "name": _roomLightObject.lightName1 if i == 1 else _roomLightObject.lightName2,
+                    "status": _roomLightObject.light1 if i == 1 else _roomLightObject.light2
+                }
+                lightIDFlag += 1
+                returnValue["data"].append(roomDict)
             _roomLightObject.save()
-            returnValue["data"].append(roomDict)
         return JsonResponse(OK_200(data=returnValue), status=200)
 
     def post(self, request):
         if not request.user.is_authenticated or request.user.is_anonymous:
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            roomID = request.data['roomID']
-            lightID = request.data['lightID']
-            if not ((lightID == 1) or (lightID == 2)):
+            lightID = request.data['id']
+            try:
+                lightInfo = getLightRoom(int(lightID))
+            except ValueError:
                 return JsonResponse(BAD_REQUEST_400(message='Invalid RoomID', data={}), status=400)
-            lightNumberFlag = False if lightID == 1 else True
+            lightNumberFlag = False if lightInfo["light"] == 1 else True
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=roomID)
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=lightInfo["room"])
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
+        returnValue = {
+            "status": False
+        }
         if not lightNumberFlag:
             roomLightObject.light1 = not roomLightObject.light1
+            returnValue["status"] = roomLightObject.light1
         else:
             roomLightObject.light2 = not roomLightObject.light2
+            returnValue["status"] = roomLightObject.light2
         roomLightObject.save()
 
         mqtt = mqtt_publish()
         mqtt.roomLight(int(roomLightObject.__str__()), roomLightObject.roomID)
-        roomLightObject.save()
-        return JsonResponse(OK_200(), status=200)
+        return JsonResponse(OK_200(data=returnValue), status=200)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

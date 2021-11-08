@@ -16,3 +16,12 @@ def getLightStatus(light):
         "light1": light1,
         "light2": light2
     }
+
+
+def getLightRoom(lightID):
+    if lightID < 1 or lightID > 7:
+        raise ValueError
+    return {
+        "room": lightID // 2 if lightID % 2 == 0 else lightID // 2 + 1,
+        "light": lightID % 2 + 2 if lightID % 2 == 0 else lightID % 2
+    }
