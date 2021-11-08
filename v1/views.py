@@ -263,21 +263,22 @@ class roomLightNameAPI(APIView):
         if not request.user.is_authenticated or request.user.is_anonymous:
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            roomID = request.data['roomID']
-            lightID = request.data['lightID']
+            lightID = request.data['id']
             name = request.data['name']
-            if not ((lightID == 1) or (lightID == 2)):
+            try:
+                lightInfo = getLightRoom(int(lightID))
+            except ValueError:
                 return JsonResponse(BAD_REQUEST_400(message='Invalid RoomID', data={}), status=400)
-            lightNumberFlag = False if lightID == 1 else True
+            lightNumberFlag = False if lightInfo["light"] == 1 else True
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=roomID)
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=lightInfo["room"])
         except ObjectDoesNotExist:
             for i in range(1, 4):
                 light = userRoomLight(user=request.user, roomID=i)
                 light.save()
-            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=roomID)
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=lightInfo["room"])
         if not lightNumberFlag:
             roomLightObject.lightName1 = name
         else:
