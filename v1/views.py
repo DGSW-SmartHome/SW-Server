@@ -324,7 +324,7 @@ class roomPlugAPI(APIView):
         mqtt = mqtt_publish()
         mqtt.roomPlug(roomPlugObject.status, roomPlugObject.roomID)
         roomPlugObject.save()
-        return JsonResponse(OK_200(), status=200)
+        return JsonResponse(OK_200(data={"status": roomPlugObject.status}), status=200)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
