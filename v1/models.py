@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 # from django.contrib.auth import get_user_model
 from django.contrib.auth.models import (BaseUserManager, AbstractUser, PermissionsMixin)
+
+
 # from django.contrib.auth.backends import ModelBackend
 
 class UserManager(BaseUserManager):
@@ -30,6 +32,7 @@ class UserManager(BaseUserManager):
             raise ValueError("Administrator must be 'is_superuser' is True")
 
         return self._create_user(id, username, password, **extra_fields)
+
 
 # class UserAuth(ModelBackend):
 #     def authenticate(self, **kwargs):
@@ -76,15 +79,32 @@ class fineDustInfo(models.Model):
 
 
 class userRoomLight(models.Model):
+    primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    roomID = models.IntegerField(null=False, primary_key=True)
+    roomID = models.IntegerField(null=False)
     roomName = models.CharField(max_length=15, default='room', null=True, unique=False)
-    status = models.BooleanField(default=False, null=False)
+
+    light1 = models.BooleanField(default=False, null=False)
+    lightName1 = models.CharField(max_length=15, default='light1', null=True, unique=False)
+
+    light2 = models.BooleanField(default=False, null=False)
+    lightName2 = models.CharField(max_length=15, default='light2', null=True, unique=False)
+
+    def __str__(self):
+        if not (self.light1 or self.light2):
+            return '0'
+        elif self.light1 and self.light2:
+            return '3'
+        elif self.light1 is True and self.light2 is False:
+            return '1'
+        elif self.light1 is False and self.light2 is True:
+            return '2'
 
 
 class userRoomPlug(models.Model):
+    primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    roomID = models.IntegerField(null=False, primary_key=True)
+    roomID = models.IntegerField(null=False, primary_key=False)
     roomName = models.CharField(max_length=15, default='room', null=True, unique=False)
     status = models.BooleanField(default=False, null=False)
 

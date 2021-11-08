@@ -11,16 +11,17 @@ class mqtt_publish:
         self.mqtt.connect(broker, 1883)  # mqtt broker에 연결
         self.mqtt.loop(2)  # timeout - 2sec
 
-    def roomPlug(self, status, roomNumber):
+    def roomPlug(self, status, plugNumber):
+        command = 'on' if status else 'off'
         returnData = {
-            'type': "plug"+str(roomNumber),
-            'cmd': status
+            'type': "plug"+str(plugNumber),
+            'cmd': command
         }
         self.mqtt.publish(topic, json.dumps(returnData).encode())
 
-    def roomLight(self, status, roomNumber):
+    def roomLight(self, status, lightNumber):
         returnData = {
-            'type': "light"+str(roomNumber),
+            'type': "light"+str(lightNumber),
             'cmd': status
         }
         self.mqtt.publish(topic, json.dumps(returnData).encode())

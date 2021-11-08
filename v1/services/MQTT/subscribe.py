@@ -8,13 +8,13 @@ class MQTT:
     self.port = 1883
     self.topic = '/SMARTHOME/sensor' # 하드웨어 쪽과 상의 후 변경
     self.client = None
-    
+
     # sensor Value
-    """
-    self.fineDust = None
-    ... 등 이런식으로 여러가지 센서 값 변수 만들어 두기
-    """
-  
+    self.light1 = None
+    self.light2 = None
+    self.light3 = None
+
+
   def connect_mqtt(self) -> mqtt:
     def on_connect(client, userdata, flags, rc):
       if rc == 0:
@@ -33,12 +33,11 @@ class MQTT:
   def subscribe(self, client: mqtt):
     def on_message(client, userdata, msg):
       recv = msg.payload.decode()
-      j = json.loads(recv)
-      if j:
-        """  # 가져온 값을 __init__ 함수에서 만들어둔 변수에 저장
-        self.fineDust = j['fine_dust']
-        print('this is got : {}', format(j))  # 가져온 값 출력
-        """
+      HW_DATA = json.loads(recv)
+      if HW_DATA:
+        self.light1 = HW_DATA["light1"]
+        self.light2 = HW_DATA["light2"]
+        self.light3 = HW_DATA["light3"]
       else:
         print('no data...')
     
@@ -54,19 +53,18 @@ class MQTT:
     self.get_data()
   
   def get_data(self):
-    pass
-    """
-    if self.fineDust == None:  # 함수에서 만들어둔 변수가 전부 None 이라면
+    if (self.light1 == None) and (self.light2 == None) and (self.light3 == None):
       returnValue = {
-        'fineDust': 0,
-        ...
+        "light1": 0,
+        "light2": 0,
+        "light3": 0
       }
-      return returnValue
       
     else:
       returnValue = {
-        'fineDust': self.fineDust,
-        ...
+        "light1": self.light1,
+        "light2": self.light2,
+        "light3": self.light3
       }
-      return returnValue
-    """
+
+    return returnValue

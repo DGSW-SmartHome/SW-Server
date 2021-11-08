@@ -14,6 +14,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .models import *
+from .services.functions import getLightStatus
+from .__init__ import recv
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -35,7 +37,7 @@ class signUp(APIView):
                     username=username
                 )
                 userModel.save()
-                for i in range(1, 7):
+                for i in range(1, 4):
                     light = userRoomLight(user=userModel, roomID=i)
                     plug = userRoomPlug(user=userModel, roomID=i)
                     light.save()
@@ -191,12 +193,34 @@ class roomLightAPI(APIView):
             roomLightObject = list(roomLightObject)
         except ObjectDoesNotExist:
             roomLightObject = []
-            for i in range(1, 7):
-                light = userRoomLight(user=request.user, roomID=i)
+            HW_DATA = recv()
+            for i in range(1, 4):
+                light = userRoomLight(user=request.user, roomID=i,
+                                      light1=True if getLightStatus(HW_DATA["light" + str(i)])["light1"] else False,
+                                      light2=True if getLightStatus(HW_DATA["light" + str(i)])["light2"] else False
+                                      )
                 light.save()
                 roomLightObject.append(light)
+        HW_DATA = recv()
+        HW_STATUS_FLAG = True
+        if HW_DATA is None:
+            print("SERVER IS OFFLINE")
+            HW_STATUS_FLAG = False
+        temp = 1
         for _roomLightObject in roomLightObject:
-            roomDict = {"id": _roomLightObject.roomID, "name": _roomLightObject.roomName, "status": _roomLightObject.status}
+            if HW_STATUS_FLAG:
+                lightStatusStamp = getLightStatus(HW_DATA["light" + str(temp)])
+                temp += 1
+                _roomLightObject.light1 = lightStatusStamp["light1"]
+                _roomLightObject.light2 = lightStatusStamp["light2"]
+            roomDict = {
+                "id": _roomLightObject.roomID,
+                "lightName1": _roomLightObject.lightName1,
+                "statusLight1": _roomLightObject.light1,
+                "lightName2": _roomLightObject.lightName2,
+                "statusLight2": _roomLightObject.light2
+            }
+            _roomLightObject.save()
             returnValue["data"].append(roomDict)
         return JsonResponse(OK_200(data=returnValue), status=200)
 
@@ -204,20 +228,25 @@ class roomLightAPI(APIView):
         if not request.user.is_authenticated or request.user.is_anonymous:
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            id = request.data['id']
+            roomID = request.data['roomID']
+            lightID = request.data['lightID']
+            if not ((lightID == 1) or (lightID == 2)):
+                return JsonResponse(BAD_REQUEST_400(message='Invalid RoomID', data={}), status=400)
+            lightNumberFlag = False if lightID == 1 else True
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=roomID)
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(message="There's no exiting value", status=400, data={}), status=400)
-        roomLightObject.status = not roomLightObject.status
-        if roomLightObject.status:
-            returnStatus = 3
+        if not lightNumberFlag:
+            roomLightObject.light1 = not roomLightObject.light1
         else:
-            returnStatus = 0
+            roomLightObject.light2 = not roomLightObject.light2
+        roomLightObject.save()
+
         mqtt = mqtt_publish()
-        mqtt.roomLight(returnStatus, roomLightObject.roomID)
+        mqtt.roomLight(int(roomLightObject.__str__()), roomLightObject.roomID)
         roomLightObject.save()
         return JsonResponse(OK_200(), status=200)
 
@@ -228,18 +257,25 @@ class roomLightNameAPI(APIView):
         if not request.user.is_authenticated or request.user.is_anonymous:
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            id = request.data['id']
+            roomID = request.data['roomID']
+            lightID = request.data['lightID']
             name = request.data['name']
+            if not ((lightID == 1) or (lightID == 2)):
+                return JsonResponse(BAD_REQUEST_400(message='Invalid RoomID', data={}), status=400)
+            lightNumberFlag = False if lightID == 1 else True
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
         try:
-            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=roomID)
         except ObjectDoesNotExist:
-            for i in range(1, 7):
+            for i in range(1, 4):
                 light = userRoomLight(user=request.user, roomID=i)
                 light.save()
-            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=id)
-        roomLightObject.roomName = name
+            roomLightObject = userRoomLight.objects.get(user=request.user, roomID=roomID)
+        if not lightNumberFlag:
+            roomLightObject.lightName1 = name
+        else:
+            roomLightObject.lightName2 = name
         roomLightObject.save()
         return JsonResponse(OK_200(data={}), status=200)
 
@@ -253,11 +289,11 @@ class roomPlugAPI(APIView):
             "data": []
         }
         try:
-            roomPlugAPI = userRoomPlug.objects.filter(user=request.user)
-            roomPlugObject = list(roomPlugAPI)
+            roomPlugObject = userRoomPlug.objects.filter(user=request.user)
+            roomPlugObject = list(roomPlugObject)
         except ObjectDoesNotExist:
             roomPlugObject = []
-            for i in range(1, 7):
+            for i in range(1, 4):
                 plug = userRoomPlug(user=request.user, roomID=i)
                 plug.save()
                 roomPlugObject.append(plug)
@@ -297,7 +333,7 @@ class roomPlugNameAPI(APIView):
         try:
             roomPlugObject = userRoomPlug.objects.get(user=request.user, roomID=id)
         except ObjectDoesNotExist:
-            for i in range(1, 7):
+            for i in range(1, 4):
                 plug = userRoomPlug(user=request.user, roomID=i)
                 plug.save()
             roomPlugObject = userRoomPlug.objects.get(user=request.user, roomID=id)
@@ -305,7 +341,11 @@ class roomPlugNameAPI(APIView):
         roomPlugObject.save()
         return JsonResponse(OK_200(data={}), status=200)
 
+# 내가 보내는거
+# { 'type' : 'light1~3' / 'plug1~3', 'cmd' : 0~3 / 'on/off' }
 
+# 내가 받는거
+# { 'finedust' : finedust, 'light1~3' : light1~3 } - light1에서 3번까지 모두 수신
 
 # id username password
 
