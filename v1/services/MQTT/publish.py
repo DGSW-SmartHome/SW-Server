@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 
 broker = '13.209.41.37'  # mqtt broker ip
-topic = '/SMARTHOME/contorl'
+topic = '/SMARTHOME/control'
 
 
 class mqtt_publish:
